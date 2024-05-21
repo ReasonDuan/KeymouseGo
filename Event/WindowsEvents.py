@@ -1,6 +1,8 @@
 import re
 import pyperclip
 import win32api
+import time
+import datetime
 
 from Event.Event import Event
 from loguru import logger
@@ -119,3 +121,23 @@ class WindowsEvent(Event):
                 win32api.keybd_event(162, 0, win32con.KEYEVENTF_KEYUP, 0)
             else:
                 logger.warning('Unknown extra event:%s' % self.message)
+
+        elif self.event_type == 'ET':
+
+            if self.message == 'start':
+                try:
+                    start_timestamp = self.action
+                    date = datetime.datetime.fromtimestamp(start_timestamp)
+                    custom_format = "%Y-%m-%d %H:%M:%S"  # 自定义格式：年-月-日 时:分:秒
+                    formatted_date = date.strftime(custom_format)
+                    logger.info('Script start at %s' % formatted_date)
+                    # 获取当前时间戳
+                    current_timestamp = time.time()
+                    # 计算需要等待的秒数
+                    seconds_to_wait = max(0, start_timestamp - current_timestamp)
+                    # 等待到达目标时间戳
+                    time.sleep(seconds_to_wait)
+                except Exception as e:
+                    logger.warning('Time stamp format error.')
+            else:
+                logger.warning('Unknown time event:%s' % self.message)
